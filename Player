@@ -1,0 +1,19 @@
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.input.KeyCode;
+import java.util.ArrayList;
+
+public class Player extends DrawlObject {
+    
+    private float speedX = 0;
+    private float speedY = 0;
+    private final float acceleration = 0.1f;
+    private final float maxSpeed = 5.0f;
+    private final float deceleration = 0.025f;
+
+
+
+
+
+
+}
