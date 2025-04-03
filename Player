@@ -11,9 +11,43 @@ public class Player extends DrawlObject {
     private final float maxSpeed = 5.0f;
     private final float deceleration = 0.025f;
 
+public Player(float x, float y) {
+        super(x, y);
+    }
 
+public void act(ArrayList<KeyCode> pressedKeys) {
+        // Adjust speed based on keys pressed
+        if (pressedKeys.contains(KeyCode.W)) speedY -= acceleration;   // Up
+        if (pressedKeys.contains(KeyCode.S)) speedY += acceleration;   // Down
+        if (pressedKeys.contains(KeyCode.A)) speedX -= acceleration;   // Left
+        if (pressedKeys.contains(KeyCode.D)) speedX += acceleration;   // Right
 
+        // Apply max speed limits
+        if (speedX > maxSpeed) speedX = maxSpeed;
+        if (speedX < -maxSpeed) speedX = -maxSpeed;
+        if (speedY > maxSpeed) speedY = maxSpeed;
+        if (speedY < -maxSpeed) speedY = -maxSpeed;
 
+        // Apply deceleration when no keys are pressed
+        if (!pressedKeys.contains(KeyCode.W) && !pressedKeys.contains(KeyCode.S)) {
+            if (Math.abs(speedY) < deceleration) {
+                speedY = 0;
+            } else {
+                speedY -= Math.signum(speedY) * deceleration;
+            }
+        }
 
+        if (!pressedKeys.contains(KeyCode.A) && !pressedKeys.contains(KeyCode.D)) {
+            if (Math.abs(speedX) < deceleration) {
+                speedX = 0;
+            } else {
+                speedX -= Math.signum(speedX) * deceleration;
+            }
+        }
+
+        // Update position
+        setX(getX() + speedX);
+        setY(getY() + speedY);
+    }
 
 }
