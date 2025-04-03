@@ -9,6 +9,7 @@ public class TestObject extends DrawlObject
    {
       super(x,y);
    }
+	
    //draws itself at the passed in x and y.
    public void drawMe(float x, float y, GraphicsContext gc)
    {
