@@ -31,25 +31,42 @@ import javafx.geometry.*;
 public class Main extends Application
 {
    FlowPane fp;
-   
+
+private Canvas theCanvas = new Canvas(600, 600);
+private GraphicsContext gc;
+    
+private Player thePlayer; 
+private ArrayList<KeyCode> pressedKeys = new ArrayList<>();
+    
+// Variables to track score and high score
+private double score = 0;
+private double highScore = 0;
+
    Canvas theCanvas = new Canvas(600,600);
 
-   public void start(Stage stage)
-   {
-      
-   
-      fp = new FlowPane();
-      fp.getChildren().add(theCanvas);
-      gc = theCanvas.getGraphicsContext2D();
-      drawBackground(300,300,gc);
-      
-      
-      Scene scene = new Scene(fp, 600, 600);
-      stage.setScene(scene);
-      stage.setTitle("Project :)");
-      stage.show();  
-   }
-   
+   public void start(Stage stage) {
+        Scene scene = new Scene(new javafx.scene.layout.StackPane(theCanvas), 600, 600);
+        stage.setScene(scene);
+        stage.setTitle("Project :)");
+        stage.show();
+
+        gc = theCanvas.getGraphicsContext2D();
+        
+        thePlayer = new Player(300, 300);
+
+        // Add key listeners
+        scene.setOnKeyPressed(e -> {
+            if (!pressedKeys.contains(e.getCode())) {
+                pressedKeys.add(e.getCode());
+            }
+        });
+
+        scene.setOnKeyReleased(e -> pressedKeys.remove(e.getCode()));
+
+        // Start the animation handler
+        new AnimationHandler().start();
+    }
+   /*
    GraphicsContext gc;
 
    Image background = new Image("stars.png");
@@ -115,6 +132,7 @@ public class Main extends Application
          
       }
    }
+*/
 
    public static void main(String[] args)
    {
