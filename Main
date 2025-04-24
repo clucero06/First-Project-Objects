@@ -30,112 +30,214 @@ import javafx.geometry.*;
 
 public class Main extends Application
 {
-   FlowPane fp;
+    private Player thePlayer;
+    private ArrayList<Mine> mines = new ArrayList<>();
 
-private Canvas theCanvas = new Canvas(600, 600);
-private GraphicsContext gc;
-    
-private Player thePlayer; 
-private ArrayList<KeyCode> pressedKeys = new ArrayList<>();
-    
-// Variables to track score and high score
-private double score = 0;
-private double highScore = 0;
+    private boolean wPressed = false;
+    private boolean aPressed = false;
+    private boolean sPressed = false;
+    private boolean dPressed = false;
+    private Set<String> visitedGrids = new HashSet<>();
+    private Set<String> spawnedMineGrids = new HashSet<>();
 
-   Canvas theCanvas = new Canvas(600,600);
+    private double highScore = 0;
+    private final String highscoreFileName = "highscore.txt";
+    private boolean gameOver = false;
 
-   public void start(Stage stage) {
-        Scene scene = new Scene(new javafx.scene.layout.StackPane(theCanvas), 600, 600);
-        stage.setScene(scene);
-        stage.setTitle("Project :)");
-        stage.show();
+    public static void main(String[] args)
+	{
+        launch(args);
+   	}
 
-        gc = theCanvas.getGraphicsContext2D();
-        
-        thePlayer = new Player(300, 300);
+    @Override
+    public void start(Stage stage)
+	{
+       	 Pane root = new Pane();
+       	 Canvas canvas = new Canvas(800, 800);
+       	 root.getChildren().add(canvas);
+       	 GraphicsContext gc = canvas.getGraphicsContext2D();
+       	 Scene scene = new Scene(root);
 
-        // Add key listeners
+       	 Image background = new Image("stars.png");
+       	 Image overlay = new Image("starsoverlay.png");
+
+       	 thePlayer = new Player(300, 300);
+       	 loadHighScore();
+
+        new AnimationTimer()
+	{
+            public void handle(long currentNanoTime) {
+                if (!gameOver) {
+                    update();
+                }
+                draw(gc, background, overlay);
+            }
+        }.start();
+
         scene.setOnKeyPressed(e -> {
-            if (!pressedKeys.contains(e.getCode())) {
-                pressedKeys.add(e.getCode());
+            switch (e.getCode()) {
+                case W:
+                    wPressed = true;
+                    break;
+                case A:
+                    aPressed = true;
+                    break;
+                case S:
+                    sPressed = true;
+                    break;
+                case D:
+                    dPressed = true;
+                    break;
+            }
+        });
+        scene.setOnKeyReleased(e -> {
+            switch (e.getCode()) {
+                case W:
+                    wPressed = false;
+                    break;
+                case A:
+                    aPressed = false;
+                    break;
+                case S:
+                    sPressed = false;
+                    break;
+                case D:
+                    dPressed = false;
+                    break;
             }
         });
 
-        scene.setOnKeyReleased(e -> pressedKeys.remove(e.getCode()));
-
-        // Start the animation handler
-        new AnimationHandler().start();
+        stage.setScene(scene);
+        stage.setTitle("Player Movement Game with Mines");
+        stage.show();
     }
-   /*
-   GraphicsContext gc;
 
-   Image background = new Image("stars.png");
-   Image overlay = new Image("starsoverlay.png");
-   Random backgroundRand = new Random();
-   //this piece of code doesn't need to be modified
-   public void drawBackground(float playerx, float playery, GraphicsContext gc)
-   {
-	  //re-scale player position to make the background move slower. 
-      playerx*=.1;
-      playery*=.1;
-   
-	//figuring out the tile's position.
-      float x = (playerx) / 400;
-      float y = (playery) / 400;
-      
-      int xi = (int) x;
-      int yi = (int) y;
-      
-	  //draw a certain amount of the tiled images
-      for(int i=xi-3;i<xi+3;i++)
-      {
-         for(int j=yi-3;j<yi+3;j++)
-         {
-            gc.drawImage(background,-playerx+i*400,-playery+j*400);
-         }
-      }
-      
-	  //below repeats with an overlay image
-      playerx*=2f;
-      playery*=2f;
-   
-      x = (playerx) / 400;
-      y = (playery) / 400;
-      
-      xi = (int) x;
-      yi = (int) y;
-      
-      for(int i=xi-3;i<xi+3;i++)
-      {
-         for(int j=yi-3;j<yi+3;j++)
-         {
-            gc.drawImage(overlay,-playerx+i*400,-playery+j*400);
-         }
-      }
-   }
+    private void update()
+	{
+        thePlayer.update(wPressed, aPressed, sPressed, dPressed);
 
-   public class AnimationHandler extends AnimationTimer
-   {
-      public void handle(long currentTimeInNanoSeconds) 
-      {
-         gc.clearRect(0,0,600,600);
-         
-         //USE THIS CALL ONCE YOU HAVE A PLAYER
-         //drawBackground(thePlayer.getX(),thePlayer.getY(),gc); 
+        int cgridx = ((int) thePlayer.getX()) / 100;
+        int cgridy = ((int) thePlayer.getY()) / 100;
 
+        String currentGrid = cgridx + "," + cgridy;
+        if (!visitedGrids.contains(currentGrid))
+		{
+         	   visitedGrids.add(currentGrid);
 
-	      //example calls of draw - this should be the player's call for draw
-         //thePlayer.draw(300,300,gc,true); //all other objects will use false in the parameter.
+            	for (int dx = -4; dx <= 4; dx++) {
+            	    for (int dy = -4; dy <= 4; dy++) {
+             	       int gx = cgridx + dx;
+                	    int gy = cgridy + dy;
 
-         //example call of a draw where m is a non-player object. Note that you are passing the player's position in and not m's position.
-         //m.draw(thePlayer.getX(),thePlayer.getY(),gc,false);
-         
-      }
-   }
-*/
+                  	  int dist = Math.max(Math.abs(dx), Math.abs(dy));
+                   	 if (dist < 3 || dist > 4)
+                  	      continue;
 
-   public static void main(String[] args)
-   {
-      launch(args);
-   }
+                 	   String gridKey = gx + "," + gy;
+                 	   if (!spawnedMineGrids.contains(gridKey))
+			{
+                   	     spawnedMineGrids.add(gridKey);
+
+                   		int gposx = gx * 100;
+                    	   	int gposy = gy * 100;
+
+                   	    
+                   	     int maxMines = 1 + (int) (Math.random() * 2); // try 1-3 mines
+                    	 	   for (int i = 0; i < maxMines; i++)
+				{
+                         	   if (Math.random() < 0.3) { // reduced probability to 10%
+                         	       double mx = gposx + Math.random() * 100;
+                         	       double my = gposy + Math.random() * 100;
+
+                          	      if (DrawlObject.distance(mx, my, thePlayer.getX(), thePlayer.getY()) < 30)
+                          	          continue;
+
+                          	      mines.add(new Mine(mx, my));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mines.removeIf(m -> DrawlObject.distance(thePlayer, m) > 1000);
+
+        for (Mine m : new ArrayList<>(mines))
+	{
+            if (DrawlObject.distance(thePlayer, m) < 20)
+	    {
+                gameOver = true;
+                thePlayer.setDead(true);
+                mines.remove(m);
+                break;
+            }
+        }
+
+        double score = DrawlObject.distance(thePlayer.getX(), thePlayer.getY(), 300, 300);
+        if (score > highScore)
+	{
+            highScore = score;
+            saveHighScore(highScore);
+        }
+    }
+
+    private void draw(GraphicsContext gc, Image background, Image overlay)
+	{
+        	gc.clearRect(0, 0, 800, 800);
+
+       	 	double camX = thePlayer.getX() - 400;
+        	double camY = thePlayer.getY() - 400;
+
+        for (int x = -1; x <= 8; x++)
+	{
+            	for (int y = -1; y <= 8; y++)
+		{
+                	gc.drawImage(background, x * 100 - camX % 100, y * 100 - camY % 100, 100, 100);
+            	}
+       	}
+
+        for (Mine m : mines)
+	{
+            m.draw(gc, camX, camY);
+        }
+
+        if (!thePlayer.isDead())
+	{
+            thePlayer.draw(gc, camX, camY);
+        }
+
+        gc.setFill(Color.WHITE);
+        double score = DrawlObject.distance(thePlayer.getX(), thePlayer.getY(), 300, 300);
+        gc.fillText("Score: " + (int) score, 10, 20);
+        gc.fillText("Highscore: " + (int) highScore, 10, 40);
+
+        if (gameOver)
+	{
+            gc.setFill(Color.RED);
+            gc.fillText("Game Over!", 350, 400);
+        }
+    }
+
+    private void loadHighScore()
+	{
+        	try (BufferedReader br = new BufferedReader(new FileReader(highscoreFileName))) {
+            	String line = br.readLine();
+            	if (line != null) {
+                	highScore = Double.parseDouble(line);
+            	}
+        } catch (IOException e)
+	{
+            System.out.println("No highscore file found. Starting fresh.");
+        }
+    }
+
+    private void saveHighScore(double score)
+	{
+        	try (BufferedWriter bw = new BufferedWriter(new FileWriter(highscoreFileName))) {
+           	 bw.write(String.valueOf((int) score));
+        } catch (IOException e) {
+            System.out.println("Failed to save highscore.");
+        }
+    }
 }
+
