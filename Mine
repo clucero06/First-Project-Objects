@@ -1,0 +1,22 @@
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+
+public class Mine extends DrawlObject {
+    private double phase;
+
+    public Mine(double x, double y) {
+        super(x, y);
+        this.phase = Math.random() * Math.PI * 2;
+    }
+
+    public void draw(GraphicsContext gc, double camX, double camY) {
+        double r = 0.5 + 0.5 * Math.sin(System.currentTimeMillis() / 300.0 + phase);
+        Color c = Color.color(1, 1 - r, 1 - r);
+
+        gc.setFill(c);
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(1);
+        gc.fillOval(x - camX - 6, y - camY - 6, 12, 12);
+        gc.strokeOval(x - camX - 6, y - camY - 6, 12, 12);
+    }
+}
