@@ -5,49 +5,87 @@ import java.util.ArrayList;
 
 public class Player extends DrawlObject {
     
-    private float speedX = 0;
-    private float speedY = 0;
-    private final float acceleration = 0.1f;
-    private final float maxSpeed = 5.0f;
-    private final float deceleration = 0.025f;
+    private double speedX = 0;
+    private double speedY = 0;
+    private boolean dead = false;
+    private boolean wPressed = false;
+    private boolean aPressed = false;
+    private boolean sPressed = false;
+    private boolean dPressed = false;
 
-public Player(float x, float y) {
+
+public Player(double x, double y)
+    {
         super(x, y);
     }
 
-public void act(ArrayList<KeyCode> pressedKeys) {
-        // Adjust speed based on keys pressed
-        if (pressedKeys.contains(KeyCode.W)) speedY -= acceleration;   // Up
-        if (pressedKeys.contains(KeyCode.S)) speedY += acceleration;   // Down
-        if (pressedKeys.contains(KeyCode.A)) speedX -= acceleration;   // Left
-        if (pressedKeys.contains(KeyCode.D)) speedX += acceleration;   // Right
+public void update(boolean w, boolean a, boolean s, boolean d) {
+        this.wPressed = w;
+        this.aPressed = a;
+        this.sPressed = s;
+        this.dPressed = d;
+        double acceleration = 0.1;
+        double deceleration = 0.025;
+        double maxSpeed = 5;
 
-        // Apply max speed limits
-        if (speedX > maxSpeed) speedX = maxSpeed;
-        if (speedX < -maxSpeed) speedX = -maxSpeed;
-        if (speedY > maxSpeed) speedY = maxSpeed;
-        if (speedY < -maxSpeed) speedY = -maxSpeed;
-
-        // Apply deceleration when no keys are pressed
-        if (!pressedKeys.contains(KeyCode.W) && !pressedKeys.contains(KeyCode.S)) {
-            if (Math.abs(speedY) < deceleration) {
-                speedY = 0;
-            } else {
-                speedY -= Math.signum(speedY) * deceleration;
-            }
+        if (wPressed) {
+            speedY -= acceleration;
+        } else {
+            speedY += (speedY > 0) ? -deceleration : 0;
+        }
+        if (sPressed) {
+            speedY += acceleration;
+        } else {
+            speedY += (speedY < 0) ? deceleration : 0;
+        }
+        if (aPressed) {
+            speedX -= acceleration;
+        } else {
+            speedX += (speedX > 0) ? -deceleration : 0;
+        }
+        if (dPressed) {
+            speedX += acceleration;
+        } else {
+            speedX += (speedX < 0) ? deceleration : 0;
         }
 
-        if (!pressedKeys.contains(KeyCode.A) && !pressedKeys.contains(KeyCode.D)) {
-            if (Math.abs(speedX) < deceleration) {
-                speedX = 0;
-            } else {
-                speedX -= Math.signum(speedX) * deceleration;
-            }
+        if (speedX > -0.025 && speedX < 0.025) {
+            speedX = 0;
+        }
+        if (speedY > -0.025 && speedY < 0.025) {
+            speedY = 0;
         }
 
-        // Update position
-        setX(getX() + speedX);
-        setY(getY() + speedY);
+        speedX = Math.max(Math.min(speedX, maxSpeed), -maxSpeed);
+        speedY = Math.max(Math.min(speedY, maxSpeed), -maxSpeed);
+
+        x += speedX;
+        y += speedY;
+    }
+
+    public void draw(GraphicsContext gc, double camX, double camY) {
+        gc.setFill(Color.LIGHTGREEN);
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(2);
+        gc.fillOval(x - camX - 17, y - camY - 17, 34, 34);
+        gc.strokeOval(x - camX - 17, y - camY - 17, 34, 34);
+    }
+
+    public void setX(double newX) {
+        x = newX;
+    }
+
+    public void setY(double newY) {
+        y = newY;
+    }
+
+    public void setDead(boolean d) {
+        dead = d;
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
     }
 
 }
