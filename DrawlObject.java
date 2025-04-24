@@ -2,29 +2,23 @@ import javafx.scene.paint.*;
 import javafx.scene.canvas.*;
 
 public abstract class DrawlObject {
-    private float x;
-    private float y;
+    private double x;
+    private double y;
 
-    public DrawlObject(float x, float y) {
+    public DrawlObject(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public void draw(float playerx, float playery, GraphicsContext gc, boolean isPlayer) {
-        if (isPlayer)
-            drawMe(playerx, playery, gc);
-        else
-            drawMe(-playerx + 300 + x, -playery + 300 + y, gc);
+    public double getX() { return x; }
+    public double getY() { return y; }
+
+    public abstract void draw(GraphicsContext gc, double camX, double camY);
+
+    public static double distance(DrawlObject a, DrawlObject b) {
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
-
-    public abstract void drawMe(float x, float y, GraphicsContext gc);
-
-    public float getX() { return x; }
-    public float getY() { return y; }
-    public void setX(float x_) { x = x_; }
-    public void setY(float y_) { y = y_; }
-    
-    public double distance(DrawlObject other) {
-        return Math.sqrt((other.x - x) * (other.x - x) + (other.y - y) * (other.y - y));
+    public static double distance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 }
